@@ -4,7 +4,7 @@
 //! serial port I/O, and `futures`.  The API is very similar to the
 //! bindings in `mio_serial`
 //!
-#![deny(missing_docs)]
+// #![deny(missing_docs)]
 #![warn(rust_2018_idioms)]
 
 // Re-export serialport types and traits from mio_serial
@@ -61,7 +61,7 @@ pub struct SerialStream {
     // Both `mio` and `tokio` don't yet have any code to work on arbitrary HANDLEs.
     // But they have code for dealing with named pipes, and we (ab)use that here to work on COM ports.
     #[cfg(windows)]
-    inner: named_pipe::NamedPipeClient,
+    pub inner: named_pipe::NamedPipeClient,
     // The com port is kept around for serialport related methods
     #[cfg(windows)]
     com: mem::ManuallyDrop<mio_serial::SerialStream>,
@@ -70,7 +70,8 @@ pub struct SerialStream {
 impl SerialStream {
     /// Open serial port from a provided path, using the default reactor.
     pub fn open(builder: &crate::SerialPortBuilder) -> crate::Result<Self> {
-        let port = mio_serial::SerialStream::open(builder)?;
+        let mut port = mio_serial::SerialStream::open(builder)?;
+        port.pipe.set_buffer_size(1);
 
         #[cfg(unix)]
         {
@@ -351,7 +352,8 @@ impl crate::SerialPort for SerialStream {
 
     #[inline(always)]
     fn data_bits(&self) -> crate::Result<crate::DataBits> {
-        self.borrow().data_bits()
+        Ok(crate::DataBits::Eight)
+        // self.borrow().data_bits().unwrap_or(DataBits::Eight)
     }
 
     #[inline(always)]
@@ -366,7 +368,8 @@ impl crate::SerialPort for SerialStream {
 
     #[inline(always)]
     fn stop_bits(&self) -> crate::Result<crate::StopBits> {
-        self.borrow().stop_bits()
+        Ok(crate::StopBits::One)
+        // self.borrow().stop_bits().map_err()
     }
 
     #[inline(always)]

@@ -35,8 +35,10 @@ default-features = false
 optional = true
 
 [dependencies.mio-serial]
-version = "5.0.3"
-default-features = false
+git = "https://github.com/DerAndereJohannes/mio-serial.git"
+branch = "experiment-fix"
+# version = "5.0.3"
+# default-features = false
 
 [dependencies.bytes]
 version = "1"
